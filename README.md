@@ -7,5 +7,6 @@ communication between the clients and the server will be defined by the Trans-
 mission Control Protocol (TCP).
 
 # Dependencies
+* pip3: sudo apt-get install python3-pip
 * PyGame: sudo pip3 install pygame
 * tkinter: sudo apt-get install python3-tk
