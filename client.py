@@ -33,16 +33,21 @@ try:
         if data:
             #chunks = chunks + message
             #print(chunks)
-            if message == 'WELCOME<1>':
-                print('ok!')
 
+            if (message[0:8] == "WELCOME<") and ((int(message[8:9])) >= 0) and ((int(message[8:9])) <= 3) and (message[9:10]) == ">":
+                my_id = int(message[8:9])
+                time.sleep(5)
+                message = 'DISCONNECT'
+                data = str.encode(message)
+                sock.sendall(data)
+                #break
                 #print('sending data back to the client')
                 #message = 'WELCOME<{}>'.format(client_address)
                 #data = str.encode(message)
                 #connection.sendall(data)
 
         else:
-            print('no data from', client_address)
+            print('no data from', server_address)
             break
     
 

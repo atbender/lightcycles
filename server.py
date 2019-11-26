@@ -1,6 +1,7 @@
 import socket
 import sys
 import time
+from _thread import *
 
 client_messages = ('CONNECT', 'DISCONNECT', 'READY', 'TERMINATE', 'TURN')
 server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', 'FULL', 'SPAWN', 'TERMINATED', 'VICTORY', 'TURNED')
@@ -15,29 +16,18 @@ print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
 # Listen for incoming connections
-sock.listen(1)
+sock.listen(4)
+print('waiting for a connection')
 
 players = []
 continue_serving = True
 encoding = 'utf-8'
 
-
-while continue_serving:
-
-    # Wait for a connection
-    print('waiting for a connection')
-    connection, client_address = sock.accept()
-
-    try:
-        print('new client: ', client_address)
-        #players.append(client_address)
-        #print(client_address)
-        #print(len(players))
+def threaded_client(connection):
 
 
-        # Receive the data in small chunks and retransmit it
-        #chunks = ''
-        while True:
+    while True:
+        try:
             data = connection.recv(2048)
             message = data.decode(encoding)
             print('received {!r}'.format(message))
@@ -45,21 +35,36 @@ while continue_serving:
                 #chunks = chunks + message
                 #print(chunks)
                 if message == 'CONNECT':
-                    players.append(client_address)
+                    if len(players) >= 4:
+                        # send FULL
+                        break
+                    players.insert(len(players), client_address)
                     print(len(players))
 
-                    #print('sending data back to the client')
+                    print(message, client_address)
                     message = 'WELCOME<{}>'.format(len(players))
                     data = str.encode(message)
                     connection.sendall(data)
 
+                if message == 'DISCONNECT':
+                    players.remove(client_address)
+                    print(len(players))
+                    print(message, client_address)
+
+                
+
             else:
                 print('no data from', client_address)
                 break
-        
 
-    finally:
-        
+        except:
+            break
 
-        # Clean up the connection
-        connection.close()
+    print("lost connection")
+    connection.close()
+
+
+while(True):
+    connection, client_address = sock.accept()
+    print('new client: ', client_address)
+    start_new_thread(threaded_client, (connection,))
