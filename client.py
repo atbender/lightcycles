@@ -68,7 +68,7 @@ class snake(object):
 
 
         #self.head.move(self.dirnx, self.dirny)
-
+        '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -107,24 +107,9 @@ class snake(object):
                     self.dirny = 1
                     return
                     #self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
-
-
             
- 
 
-        '''for i, c in enumerate(self.body):
-            p = c.pos[:]
-            if p in self.turns:
-                turn = self.turns[p]
-                c.move(turn[0],turn[1])
-                if i == len(self.body)-1:
-                    self.turns.pop(p)
-            else:
-                if c.dirnx == -1 and c.pos[0] <= 0: c.pos = (c.rows-1, c.pos[1])
-                elif c.dirnx == 1 and c.pos[0] >= c.rows-1: c.pos = (0,c.pos[1])
-                elif c.dirny == 1 and c.pos[1] >= c.rows-1: c.pos = (c.pos[0], 0)
-                elif c.dirny == -1 and c.pos[1] <= 0: c.pos = (c.pos[0],c.rows-1)
-                else: c.move(c.dirnx,c.dirny)'''
+            '''
        
  
     def reset(self, pos):
@@ -274,7 +259,6 @@ rows = 20
 win = pygame.display.set_mode((width, width))
 clock = pygame.time.Clock()
 
-
 s = snake(1, (255,0,0), (10,10))
 #t = snake(2, (0,0,255), (14,14))
 # snack = cube(randomSnack(rows, s), color=(0,255,0))
@@ -305,6 +289,29 @@ try:
 
                 if (message[0:8] == "WELCOME<") and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     my_id = int(message[8:9])
+
+                if (message[0:7] == "TURNED<") and (message[7] >= '0') and (message[7] <= '3') and (message[8] == ","):
+                    turned_cycle_id = int(message[7])
+                    if (message[9:11] == 'up') and (message[11] == '>'):
+                        print('up')
+                        if s.dirny != 1:
+                            s.dirnx = 0
+                            s.dirny = -1
+                    if (message[9:13] == 'down') and (message[13] == '>'):
+                        print('down')
+                        if s.dirny != -1:
+                            s.dirnx = 0
+                            s.dirny = 1
+                    if (message[9:13] == 'left') and (message[13] == '>'):
+                        print('left')
+                        if s.dirnx != 1:   
+                            s.dirnx = -1
+                            s.dirny = 0
+                    if (message[9:14] == 'right') and (message[14] == '>'):
+                        print('right')
+                        if s.dirnx != -1:
+                            s.dirnx = 1
+                            s.dirny = 0
                     
                         
             #redrawWindow(win)
@@ -334,7 +341,7 @@ try:
                 sock.close()
                 exit()
             elif key != False:
-                message = 'TURNED<' + str(my_id) + ',' + key + '>'
+                message = 'TURN<' + key + '>'
                 data = str.encode(message)
                 sock.sendall(data)
                 print(message)

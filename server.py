@@ -51,6 +51,32 @@ def threaded_client(connection):
                     print(len(players))
                     print(message, client_address)
 
+                if message[0:5] == "TURN<":
+                    # get id
+                    turn_id = '1'
+                    if (message[5:7] == 'up') and (message[7] == '>'):
+                        print('up')
+                        message = 'TURNED<{},{}>'.format(turn_id, message[5:7])
+                        data = str.encode(message)
+                        connection.sendall(data)
+                    if (message[5:9] == 'down') and (message[9] == '>'):
+                        print('down')
+                        message = 'TURNED<{},{}>'.format(turn_id, message[5:9])
+                        data = str.encode(message)
+                        connection.sendall(data) 
+                    if (message[5:9] == 'left') and (message[9] == '>'):
+                        print('left')
+                        message = 'TURNED<{},{}>'.format(turn_id, message[5:9])
+                        data = str.encode(message)
+                        connection.sendall(data)
+                    if (message[5:10] == 'right') and (message[10] == '>'):
+                        print('right')
+                        message = 'TURNED<{},{}>'.format(turn_id, message[5:10])
+                        data = str.encode(message)
+                        connection.sendall(data)
+        
+                    
+
                 
 
             else:
