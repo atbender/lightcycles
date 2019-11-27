@@ -60,6 +60,9 @@ def threaded_client(connection):
         except:
             break
 
+    players.remove(client_address)
+    print(len(players))
+    print(message, client_address)
     print("lost connection")
     connection.close()
 
