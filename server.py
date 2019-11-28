@@ -11,7 +11,7 @@ server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', '
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-server_address = ('localhost', 10000)
+server_address = ('localhost', 10001)
 print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
@@ -19,7 +19,32 @@ sock.bind(server_address)
 sock.listen(4)
 print('waiting for a connection')
 
-players = []
+players = ['empty', 'empty', 'empty', 'empty']
+global player_number
+player_number = 0
+
+def addPlayer(address):
+    for i in range(4):
+        print('i =', i)
+        if(players[i] == 'empty'):
+            players[i] = address
+            print(players)
+            global player_number
+            player_number = player_number + 1
+            print(player_number)
+            return i
+
+    return False
+
+def removePlayer(address):
+    try:
+        players[players.index(address)] = 'empty'
+        print(players)
+        player_number -= 1
+    except:
+        pass
+
+
 continue_serving = True
 encoding = 'utf-8'
 
@@ -35,20 +60,24 @@ def threaded_client(connection):
                 #chunks = chunks + message
                 #print(chunks)
                 if message == 'CONNECT':
-                    if len(players) >= 4:
+                    print(player_number)
+                    if player_number >= 4:
                         # send FULL
+                        print('full')
                         break
-                    players.insert(len(players), client_address)
-                    print(len(players))
 
+                    player_id = 0
+                    player_id = addPlayer(client_address)
+                    print('aaaaaaaaaaaaaaaaaa')
+                    print(player_id)
                     print(message, client_address)
-                    message = 'WELCOME<{}>'.format(len(players))
+                    message = 'WELCOME<{}>'.format(player_id)
                     data = str.encode(message)
                     connection.sendall(data)
 
                 if message == 'DISCONNECT':
-                    players.remove(client_address)
-                    print(len(players))
+                    removePlayer(client_address)
+                    print(player_number)
                     print(message, client_address)
 
                 if message[0:5] == "TURN<":
@@ -84,11 +113,12 @@ def threaded_client(connection):
                 break
 
         except:
+            print('error!')
             break
 
-    players.remove(client_address)
-    print(len(players))
-    print(message, client_address)
+    removePlayer(client_address)
+    print(player_number)
+    #print(message, client_address)
     print("lost connection")
     connection.close()
 
