@@ -11,7 +11,7 @@ server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', '
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-server_address = ('localhost', 10001)
+server_address = ('localhost', 10002)
 print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
@@ -53,8 +53,10 @@ encoding = 'utf-8'
 
 
 while(True):
+    print('while')
     try:
         connection, client_address = sock.accept()
+        sock.setblocking(False)
         clients.append((connection, client_address))
         print('new client: ', client_address)
         print(clients)
@@ -85,9 +87,11 @@ while(True):
                         #print('aaaaaaaaaaaaaaaaaa')
                         print(player_id)
                         print(message, client_address)
-                        message = 'WELCOME<{}>'.format(player_id)
-                        data = str.encode(message)
-                        connection.sendall(data)
+
+                        for conn, client_a in clients:
+                            message = 'WELCOME<{}>'.format(player_id)
+                            data = str.encode(message)
+                            conn.sendall(data)
 
                     if message == 'DISCONNECT':
                         removePlayer(client_address)
@@ -159,14 +163,13 @@ while(True):
                     connection.close()
                     exit()
 
-            except:
+            except BlockingIOError:
+                
                 print('error!')
-                removePlayer(client_address)
-                print(player_number)
+                #removePlayer(client_address)
+                #print(player_number)
                 #print(message, client_address)
-                print("lost connection")
-                clients.remove((connection, client_address))
-                connection.close()
-                exit()
-
-    
+                #print("lost connection")
+                #clients.remove((connection, client_address))
+                #connection.close()
+                #exit()
