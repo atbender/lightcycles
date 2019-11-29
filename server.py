@@ -22,6 +22,7 @@ print('waiting for a connection')
 
 players = ['empty', 'empty', 'empty', 'empty']
 clients = []
+ready_players = []
 global player_number
 player_number = 0
 
@@ -97,7 +98,35 @@ while(True):
                         connection.close()
                         exit()
 
-                    if message[0:5] == "TURN<":
+                    if message == 'READY':
+                        print('received READY')
+                        player_id = players.index(client_address)
+                        message = 'ISREADY<{}>'.format(player_id)
+                        ready_players.append(player_id)
+                        data = str.encode(message)
+                        connection.sendall(data)
+
+                        if player_id == 0:
+                            direction = 'up'
+                            x_pos = 10
+                            y_pos = 10
+                        elif player_id == 1:
+                            x_pos = 12
+                            y_pos = 12
+                            direction = 'down'
+                        elif player_id == 2:
+                            x_pos = 8
+                            y_pos = 8
+                            direction = 'right'
+                        elif player_id == 3:
+                            direction = 'left'
+                            x_pos = 6
+                            y_pos = 6
+                        message = 'SPAWN<{},{},{},{}>'.format(player_id, direction, x_pos, y_pos)
+                        data = str.encode(message)
+                        connection.sendall(data)
+
+                    if message[0:5] == 'TURN<':
                         # get id
                         turn_id = players.index(client_address)
                         print("turn_id =", turn_id)

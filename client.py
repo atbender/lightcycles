@@ -40,15 +40,25 @@ class cube(object):
  
 class snake(object):
     
-    def __init__(self, player, color, pos):
+    def __init__(self, player, color, pos, direction):
         self.player = player
         self.color = color
         self.head = cube(pos, self.color)
         self.body = []
         self.body.append(self.head)
         self.turns = {}
-        self.dirnx = 1
-        self.dirny = 0
+        if direction == 'up':
+            self.dirnx = 0
+            self.dirny = 1
+        elif dir == 'down':
+            self.dirnx = 0
+            self.dirny = -1
+        elif dir == 'left':
+            self.dirnx = -1
+            self.dirny = 0
+        elif dir == 'right':
+            self.dirnx = 1
+            self.dirny = 0
  
     def move(self):
 
@@ -172,9 +182,10 @@ def drawGrid(w, rows, surface):
        
  
 def redrawWindow(surface):
-    global rows, width, s, t, snack
+    global rows, width #, s, t, snack
     surface.fill((0,0,0))
-    s.draw(surface)
+    for s in snakes:
+        s.draw(surface)
     #t.draw(surface)
     # snack.draw(surface)
     # drawGrid(width,rows, surface)
@@ -191,15 +202,7 @@ def message_box(subject, content):
         root.destroy()
     except:
         pass
- 
 
-
-
-def redrawWindow(surface):
-    global rows, width, s, t, snack
-    surface.fill((0,0,0))
-    s.draw(surface)
-    pygame.display.update()
 
 
 def key_detection():
@@ -229,6 +232,9 @@ def key_detection():
             elif keys[pygame.K_ESCAPE]:
                 return 'esc'
 
+            elif keys[pygame.K_RETURN] and ready_game == 0:
+                return 'enter'
+
     return False
 
 
@@ -253,17 +259,18 @@ sock.setblocking(False)
 
 
 
-global width, rows, s, t, snack
+global width, rows #, s, t, snack
 width = 500
 rows = 20
 win = pygame.display.set_mode((width, width))
 clock = pygame.time.Clock()
-
-s = snake(1, (255,0,0), (10,10))
+snakes = []
+#s = snake(1, (255,0,0), (10,10))
 #t = snake(2, (0,0,255), (14,14))
 # snack = cube(randomSnack(rows, s), color=(0,255,0))
 flag = True
-
+start_game = 0
+ready_game = 0
 
 try:
     
@@ -290,7 +297,67 @@ try:
                 if (message[0:8] == "WELCOME<") and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     my_id = int(message[8:9])
 
-                if (message[0:7] == "TURNED<") and (message[7] >= '0') and (message[7] <= '3') and (message[8] == ","):
+                if message == 'ISREADY<0>':
+                    pass
+
+                if (message[0:6] == 'SPAWN<'):
+                    print('spawning:', message)
+                    if message[6] == '0': #ID
+                        if (message[8:10] == 'up'):
+                            print('here')
+                            print(message[11:13])
+                            print(message[14:16])
+                            snakes.insert(0, snake(int(message[6]), (255,0,0), (int(message[11:13]),int(message[14:16])), 'up'))     
+                            print('snek?')
+                            #message = 'TURNED<{},{}>'.format(turn_id, message[5:7])
+                            #data = str.encode(message)
+                            #connection.sendall(data)
+                        elif (message[8:12] == 'down'):
+                            snakes[0] = snake(message[6], (255,0,0), (message[13:15],message[16:18]), 'down') 
+                        elif (message[8:12] == 'left'):
+                            snakes[0] = snake(message[6], (255,0,0), (message[13:15],message[16:18]), 'left')
+                        elif (message[8:13] == 'right'):
+                            snakes[0] = snake(message[6], (255,0,0), (message[14:16],message[17:20]), 'right')
+
+                    elif message[6] == '1':
+                        #snakes[1] = snake(message[6:7], (0,0,255), (message[11:13],message[14:16]))
+                        if (message[8:10] == 'up'):
+                            snakes[1] = snake(message[6], (0,0,255), (message[11:13],message[14:16]), 'up')     
+                        elif (message[8:12] == 'down'):
+                            snakes[1] = snake(message[6], (0,0,255), (message[13:15],message[16:18]), 'down') 
+                        elif (message[8:12] == 'left'):
+                            snakes[1] = snake(message[6], (0,0,255), (message[13:15],message[16:18]), 'left')
+                        elif (message[8:13] == 'right'):
+                            snakes[1] = snake(message[6], (0,0,255), (message[14:16],message[17:20]), 'right')
+                    elif message[6] == '2':
+                        #snakes[2] = snake(message[6:7], (0,255,0), (message[11:13],message[14:16]))
+                        if (message[8:10] == 'up'):
+                            snakes[2] = snake(message[6], (0,255,0), (message[11:13],message[14:16]), 'up')     
+                        elif (message[8:12] == 'down'):
+                            snakes[2] = snake(message[6], (0,255,0), (message[13:15],message[16:18]), 'down') 
+                        elif (message[8:12] == 'left'):
+                            snakes[2] = snake(message[6], (0,255,0), (message[13:15],message[16:18]), 'left')
+                        elif (message[8:13] == 'right'):
+                            snakes[2] = snake(message[6], (0,255,0), (message[14:16],message[17:20]), 'right')     
+                    elif message[6] == '3':
+                        #snakes[3] = snake(message[6:7], (127,127,127), (message[11:13],message[14:16]))
+                        if (message[8:10] == 'up'):
+                            snakes[3] = snake(message[6], (255,255,0), (message[11:13],message[14:16]), 'up')     
+                        elif (message[8:12] == 'down'):
+                            snakes[3] = snake(message[6], (255,255,0), (message[13:15],message[16:18]), 'down') 
+                        elif (message[8:12] == 'left'):
+                            snakes[3] = snake(message[6], (255,255,0), (message[13:15],message[16:18]), 'left')
+                        elif (message[8:13] == 'right'):
+                            snakes[3] = snake(message[6], (255,255,0), (message[14:16],message[17:20]), 'right')
+                    redrawWindow(win)
+                    start_game = 1
+                    print('drawed window and started game')
+                    #precisamos definir um tamanho fixo das mensagens. Por exemplo, no X e no Y sempre mandar dois dígitos.
+                    #exemplo SPAWN<1,up,10,08>
+                    #t = snake(message[6:7], (0,0,255), (message[11:13],message[14:16]))     
+
+
+                if (message[0:7] == "TURNED<") and (message[7] >= '0') and (message[7] <= '3') and (message[8] == ",") and (start_game == 1):
                     turned_cycle_id = int(message[7])
                     if (message[9:11] == 'up') and (message[11] == '>'):
                         print('up')
@@ -333,35 +400,45 @@ try:
 
         except BlockingIOError:
             key = key_detection()
-            print(key)
+            #print(key)
             if key == 'esc':
                 message = 'DISCONNECT'
                 data = str.encode(message)
                 sock.sendall(data)
                 sock.close()
                 exit()
-            elif key != False:
+            elif key == 'enter' and ready_game == 0:
+                message = 'READY'
+                data = str.encode(message)
+                sock.sendall(data)
+                #print(message)
+                ready_game = 1
+            elif key != False and (start_game == 1):
                 message = 'TURN<' + key + '>'
                 data = str.encode(message)
                 sock.sendall(data)
                 print(message)
+                
+            
 
 
-            pygame.time.delay(15)
-            clock.tick(15)
+            
 
+            if start_game==1:
+                pygame.time.delay(15)
+                clock.tick(15)
+                for s in snakes:
+                    s.move()
+                    s.addCube()
 
-            s.move()
-            s.addCube()
-
-            for x in range(len(s.body)):
-                if s.body[x] != s.head and s.body[x].pos == s.head.pos:
-                    print('Score: ', len(s.body))
-                    message_box('You Lost!', 'Play again...')
-                    s.reset((10,10))
-                    break
-        
-            redrawWindow(win)
+                    for x in range(len(s.body)):
+                        if s.body[x] != s.head and s.body[x].pos == s.head.pos:
+                            print('Score: ', len(s.body))
+                            message_box('You Lost!', 'Play again...')
+                            s.reset((10,10))
+                            break
+            
+                redrawWindow(win)
 
             
     
