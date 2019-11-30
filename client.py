@@ -6,6 +6,7 @@ import random
 import pygame
 import tkinter as tk
 from tkinter import messagebox
+import time
 
 class cube(object):
     rows = 20
@@ -41,22 +42,23 @@ class cube(object):
 class snake(object):
     
     def __init__(self, player, color, pos, direction):
+        self.direction = direction
         self.player = player
         self.color = color
         self.head = cube(pos, self.color)
         self.body = []
         self.body.append(self.head)
         self.turns = {}
-        if direction == 'up':
+        if self.direction == 'up':
             self.dirnx = 0
             self.dirny = 1
-        elif dir == 'down':
+        elif self.direction == 'down':
             self.dirnx = 0
             self.dirny = -1
-        elif dir == 'left':
+        elif self.direction == 'left':
             self.dirnx = -1
             self.dirny = 0
-        elif dir == 'right':
+        elif self.direction == 'right':
             self.dirnx = 1
             self.dirny = 0
  
@@ -250,7 +252,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 # Connect the socket to the port where the server is listening
-server_address = ('localhost', 10005)
+server_address = ('192.168.1.10', 10002)
 print('connecting to {} port {}'.format(*server_address))
 sock.connect(server_address)
 sock.setblocking(False)
@@ -272,6 +274,7 @@ players_ready = []
 flag = True
 start_game = 0
 ready_game = 0
+
 
 try:
     
@@ -298,11 +301,17 @@ try:
                     print('START')
                     start_game = 1
 
+                if message[0:11] == 'TERMINATED<' and (message[11] >= '0') and (message[11] <= '3') and (message[12]) == ">":
+                    if int(message[11]) in players_ready:
+                        players_ready.remove(int(message[11]))
+                        snakes[int(message[11])].body = []
+                        snakes.remove[int(message[11])]
+
                 if (message[0:8] == "WELCOME<") and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     my_id = int(message[8:9])
 
-                if message[0:8] == 'ISREADY<' and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
-                    pass
+                #if message[0:8] == 'ISREADY<' and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
+                    #pass
                     #players_ready.append(int(message[8]))
 
                 if (message[0:6] == 'SPAWN<'):
@@ -363,26 +372,28 @@ try:
 
                 if (message[0:7] == "TURNED<") and (message[7] >= '0') and (message[7] <= '3') and (message[8] == ",") and (start_game == 1):
                     turned_cycle_id = int(message[7])
+
+
                     if (message[9:11] == 'up') and (message[11] == '>'):
                         print('up')
-                        if s.dirny != 1:
-                            s.dirnx = 0
-                            s.dirny = -1
+                        if snakes[turned_cycle_id].dirny != 1:
+                            snakes[turned_cycle_id].dirnx = 0
+                            snakes[turned_cycle_id].dirny = -1
                     if (message[9:13] == 'down') and (message[13] == '>'):
                         print('down')
-                        if s.dirny != -1:
-                            s.dirnx = 0
-                            s.dirny = 1
+                        if snakes[turned_cycle_id].dirny != -1:
+                            snakes[turned_cycle_id].dirnx = 0
+                            snakes[turned_cycle_id].dirny = 1
                     if (message[9:13] == 'left') and (message[13] == '>'):
                         print('left')
-                        if s.dirnx != 1:   
-                            s.dirnx = -1
-                            s.dirny = 0
+                        if snakes[turned_cycle_id].dirnx != 1:   
+                            snakes[turned_cycle_id].dirnx = -1
+                            snakes[turned_cycle_id].dirny = 0
                     if (message[9:14] == 'right') and (message[14] == '>'):
                         print('right')
-                        if s.dirnx != -1:
-                            s.dirnx = 1
-                            s.dirny = 0
+                        if snakes[turned_cycle_id].dirnx != -1:
+                            snakes[turned_cycle_id].dirnx = 1
+                            snakes[turned_cycle_id].dirny = 0
                     
                         
             #redrawWindow(win)
@@ -428,23 +439,40 @@ try:
 
             
 
-            if start_game==1:
-                print('starting game!')
-                pygame.time.delay(15)
+            if start_game == 1:
+                
+                #time.sleep(0.2)
+                pygame.time.delay(15) #15
                 clock.tick(15)
                 for s in snakes:
-                    print('moving ', s.player)
+                    #if s.player == 0:
+                    print('moving ', s.player, s.direction)
                     s.move()
                     print('adding cube to', s.player)
                     s.addCube()
 
                     print('checking collision on', s.player)
                     for x in range(len(s.body)):
-                        if s.body[x] != s.head and s.body[x].pos == s.head.pos:
-                            print('Score: ', len(s.body))
-                            message_box('You Lost!', 'Play again...')
+                        if s.body[x] != snakes[my_id].head and s.body[x].pos == snakes[my_id].head.pos:
+                            #print('COLLISION!')
+                            # terminate s
+                            message = 'TERMINATE<{}>'.format(my_id)
+                            data = str.encode(message)
+                            sock.sendall(data)
+
+                            if my_id in players_ready:
+                                players_ready.remove(int(message[11]))
+                                snakes[int(message[11])].body = []
+                                snakes.remove[int(message[11])]
+
+                            print('removed and terminated')
+                            #snakes.remove[my_id]
+                                    
+                            #print('Score: ', len(s.body))
+                            #message_box('You Lost!', 'Play again...')
                             #s.reset((10,10))
                             break
+
             
                 redrawWindow(win)
 

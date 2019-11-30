@@ -2,6 +2,7 @@ import socket
 import sys
 import time
 from _thread import *
+import time
 
 client_messages = ('CONNECT', 'DISCONNECT', 'READY', 'TERMINATE', 'TURN')
 server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', 'FULL', 'SPAWN', 'TERMINATED', 'VICTORY', 'TURNED')
@@ -11,7 +12,7 @@ server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', '
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-server_address = ('localhost', 10005)
+server_address = ('', 10002)
 print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
@@ -53,7 +54,7 @@ encoding = 'utf-8'
 
 
 while(True):
-    print('while')
+    #print('while')
     try:
         connection, client_address = sock.accept()
         connection.setblocking(False)
@@ -63,7 +64,7 @@ while(True):
     
     except BlockingIOError:
         for connection, client_address in clients:
-            print('serving ', client_address)
+            #print('serving ', client_address)
             try:
                 data = connection.recv(2048)
                 message = data.decode(encoding)
@@ -102,15 +103,22 @@ while(True):
                         connection.close()
                         exit()
 
+                    if message[0:10] == 'TERMINATE<' and (message[10] >= '0') and (message[10] <= '3') and (message[11]) == ">":
+                        terminated_id = message[10]
+                        for conn, client_a in clients:
+                            message = 'TERMINATED<{}>'.format(terminated_id)
+                            data = str.encode(message)
+                            conn.sendall(data)
+
                     if message == 'READY':
                         print('received READY')
                         player_id = players.index(client_address)
 
-                        message = 'ISREADY<{}>'.format(player_id)
+                        #message = 'ISREADY<{}>'.format(player_id)
                         ready_players.append(player_id)
-                        for conn, client_a in clients:
-                            data = str.encode(message)
-                            conn.sendall(data)
+                        #for conn, client_a in clients:
+                            #data = str.encode(message)
+                            #conn.sendall(data)
 
                         if player_id == 0:
                             direction = 'up'
@@ -133,7 +141,10 @@ while(True):
                             data = str.encode(message)
                             conn.sendall(data)
 
+                        print(len(ready_players), player_number)
                         if(len(ready_players) == player_number):
+                            print('sending start!')
+                            time.sleep(1)
                             for conn, client_a in clients:
                                 message = 'START'
                                 data = str.encode(message)
@@ -148,25 +159,25 @@ while(True):
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:7])
                             for conn, client_a in clients:
                                 data = str.encode(message)
-                                connection.sendall(data)
+                                conn.sendall(data)
                         if (message[5:9] == 'down') and (message[9] == '>'):
                             print('down')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:9])
                             for conn, client_a in clients:
                                 data = str.encode(message)
-                                connection.sendall(data) 
+                                conn.sendall(data) 
                         if (message[5:9] == 'left') and (message[9] == '>'):
                             print('left')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:9])
                             for conn, client_a in clients:
                                 data = str.encode(message)
-                                connection.sendall(data)
+                                conn.sendall(data)
                         if (message[5:10] == 'right') and (message[10] == '>'):
                             print('right')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:10])
                             for conn, client_a in clients:
                                 data = str.encode(message)
-                                connection.sendall(data)
+                                conn.sendall(data)
 
                 else:
                     print('no data from', client_address)
@@ -177,8 +188,14 @@ while(True):
                     exit()
 
             except BlockingIOError:
-                
-                print('error!')
+                pass
+
+            except KeyboardInterrupt:
+                for conn, client_a in clients:
+                    conn.close()
+
+                exit()
+                #print('error!')
                 #removePlayer(client_address)
                 #print(player_number)
                 #print(message, client_address)
