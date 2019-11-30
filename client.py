@@ -250,7 +250,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 # Connect the socket to the port where the server is listening
-server_address = ('localhost', 10002)
+server_address = ('localhost', 10005)
 print('connecting to {} port {}'.format(*server_address))
 sock.connect(server_address)
 sock.setblocking(False)
@@ -265,6 +265,7 @@ rows = 20
 win = pygame.display.set_mode((width, width))
 clock = pygame.time.Clock()
 snakes = []
+players_ready = []
 #s = snake(1, (255,0,0), (10,10))
 #t = snake(2, (0,0,255), (14,14))
 # snack = cube(randomSnack(rows, s), color=(0,255,0))
@@ -293,65 +294,68 @@ try:
             if data:
                 #chunks = chunks + message
                 #print(chunks)
+                if (message == 'START'):
+                    print('START')
+                    start_game = 1
 
                 if (message[0:8] == "WELCOME<") and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     my_id = int(message[8:9])
 
-                if message == 'ISREADY<0>':
+                if message[0:8] == 'ISREADY<' and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     pass
+                    #players_ready.append(int(message[8]))
 
                 if (message[0:6] == 'SPAWN<'):
                     print('spawning:', message)
                     if message[6] == '0': #ID
                         if (message[8:10] == 'up'):
-                            print('here')
+                            #print('here')
                             print(message[11:13])
                             print(message[14:16])
                             snakes.insert(0, snake(int(message[6]), (255,0,0), (int(message[11:13]),int(message[14:16])), 'up'))     
-                            print('snek?')
+                            #print('snek?')
                             #message = 'TURNED<{},{}>'.format(turn_id, message[5:7])
                             #data = str.encode(message)
                             #connection.sendall(data)
                         elif (message[8:12] == 'down'):
-                            snakes[0] = snake(message[6], (255,0,0), (message[13:15],message[16:18]), 'down') 
+                            snakes.insert(0, snake(int(message[6]), (255,0,0), (int(message[13:15]),int(message[16:18])), 'down'))
                         elif (message[8:12] == 'left'):
-                            snakes[0] = snake(message[6], (255,0,0), (message[13:15],message[16:18]), 'left')
+                            snakes.insert(0, snake(int(message[6]), (255,0,0), (int(message[13:15]),int(message[16:18])), 'left'))
                         elif (message[8:13] == 'right'):
-                            snakes[0] = snake(message[6], (255,0,0), (message[14:16],message[17:20]), 'right')
+                            snakes.insert(0, snake(int(message[6]), (255,0,0), (int(message[14:16]),int(message[17:20])), 'right'))
 
                     elif message[6] == '1':
                         #snakes[1] = snake(message[6:7], (0,0,255), (message[11:13],message[14:16]))
                         if (message[8:10] == 'up'):
-                            snakes[1] = snake(message[6], (0,0,255), (message[11:13],message[14:16]), 'up')     
+                            snakes.insert(1, snake(int(message[6]), (0,0,255), (int(message[11:13]),int(message[14:16])), 'up'))     
                         elif (message[8:12] == 'down'):
-                            snakes[1] = snake(message[6], (0,0,255), (message[13:15],message[16:18]), 'down') 
+                            snakes.insert(1, snake(int(message[6]), (0,0,255), (int(message[13:15]),int(message[16:18])), 'down'))
                         elif (message[8:12] == 'left'):
-                            snakes[1] = snake(message[6], (0,0,255), (message[13:15],message[16:18]), 'left')
+                            snakes.insert(1, snake(int(message[6]), (0,0,255), (int(message[13:15]),int(message[16:18])), 'left'))
                         elif (message[8:13] == 'right'):
-                            snakes[1] = snake(message[6], (0,0,255), (message[14:16],message[17:20]), 'right')
+                            snakes.insert(1, snake(int(message[6]), (0,0,255), (int(message[14:16]),int(message[17:20])), 'right'))
                     elif message[6] == '2':
                         #snakes[2] = snake(message[6:7], (0,255,0), (message[11:13],message[14:16]))
                         if (message[8:10] == 'up'):
-                            snakes[2] = snake(message[6], (0,255,0), (message[11:13],message[14:16]), 'up')     
+                            snakes.insert(2, snake(int(message[6]), (0,255,0), (int(message[11:13]),int(message[14:16])), 'up'))     
                         elif (message[8:12] == 'down'):
-                            snakes[2] = snake(message[6], (0,255,0), (message[13:15],message[16:18]), 'down') 
+                            snakes.insert(2, snake(int(message[6]), (0,255,0), (int(message[13:15]),int(message[16:18])), 'down')) 
                         elif (message[8:12] == 'left'):
-                            snakes[2] = snake(message[6], (0,255,0), (message[13:15],message[16:18]), 'left')
+                            snakes.insert(2, snake(int(message[6]), (0,255,0), (int(message[13:15]),int(message[16:18])), 'left'))
                         elif (message[8:13] == 'right'):
-                            snakes[2] = snake(message[6], (0,255,0), (message[14:16],message[17:20]), 'right')     
+                            snakes.insert(2, snake(int(message[6]), (0,255,0), (int(message[14:16]),int(message[17:20])), 'right'))     
                     elif message[6] == '3':
                         #snakes[3] = snake(message[6:7], (127,127,127), (message[11:13],message[14:16]))
                         if (message[8:10] == 'up'):
-                            snakes[3] = snake(message[6], (255,255,0), (message[11:13],message[14:16]), 'up')     
+                            snakes.insert(3, snake(int(message[6]), (255,255,0), (int(message[11:13]),int(message[14:16])), 'up'))     
                         elif (message[8:12] == 'down'):
-                            snakes[3] = snake(message[6], (255,255,0), (message[13:15],message[16:18]), 'down') 
+                            snakes.insert(3, snake(int(message[6]), (255,255,0), (int(message[13:15]),int(message[16:18])), 'down')) 
                         elif (message[8:12] == 'left'):
-                            snakes[3] = snake(message[6], (255,255,0), (message[13:15],message[16:18]), 'left')
+                            snakes.insert(3, snake(int(message[6]), (255,255,0), (int(message[13:15]),int(message[16:18])), 'left'))
                         elif (message[8:13] == 'right'):
-                            snakes[3] = snake(message[6], (255,255,0), (message[14:16],message[17:20]), 'right')
+                            snakes.insert(3, snake(int(message[6]), (255,255,0), (int(message[14:16]),int(message[17:20])), 'right'))
                     redrawWindow(win)
-                    start_game = 1
-                    print('drawed window and started game')
+                    #print('drawed window and started game')
                     #precisamos definir um tamanho fixo das mensagens. Por exemplo, no X e no Y sempre mandar dois dígitos.
                     #exemplo SPAWN<1,up,10,08>
                     #t = snake(message[6:7], (0,0,255), (message[11:13],message[14:16]))     
@@ -425,17 +429,21 @@ try:
             
 
             if start_game==1:
+                print('starting game!')
                 pygame.time.delay(15)
                 clock.tick(15)
                 for s in snakes:
+                    print('moving ', s.player)
                     s.move()
+                    print('adding cube to', s.player)
                     s.addCube()
 
+                    print('checking collision on', s.player)
                     for x in range(len(s.body)):
                         if s.body[x] != s.head and s.body[x].pos == s.head.pos:
                             print('Score: ', len(s.body))
                             message_box('You Lost!', 'Play again...')
-                            s.reset((10,10))
+                            #s.reset((10,10))
                             break
             
                 redrawWindow(win)

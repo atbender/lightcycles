@@ -11,7 +11,7 @@ server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', '
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-server_address = ('localhost', 10002)
+server_address = ('localhost', 10005)
 print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
@@ -56,7 +56,7 @@ while(True):
     print('while')
     try:
         connection, client_address = sock.accept()
-        sock.setblocking(False)
+        connection.setblocking(False)
         clients.append((connection, client_address))
         print('new client: ', client_address)
         print(clients)
@@ -105,10 +105,12 @@ while(True):
                     if message == 'READY':
                         print('received READY')
                         player_id = players.index(client_address)
+
                         message = 'ISREADY<{}>'.format(player_id)
                         ready_players.append(player_id)
-                        data = str.encode(message)
-                        connection.sendall(data)
+                        for conn, client_a in clients:
+                            data = str.encode(message)
+                            conn.sendall(data)
 
                         if player_id == 0:
                             direction = 'up'
@@ -127,8 +129,15 @@ while(True):
                             x_pos = 6
                             y_pos = 6
                         message = 'SPAWN<{},{},{},{}>'.format(player_id, direction, x_pos, y_pos)
-                        data = str.encode(message)
-                        connection.sendall(data)
+                        for conn, client_a in clients:
+                            data = str.encode(message)
+                            conn.sendall(data)
+
+                        if(len(ready_players) == player_number):
+                            for conn, client_a in clients:
+                                message = 'START'
+                                data = str.encode(message)
+                                conn.sendall(data)
 
                     if message[0:5] == 'TURN<':
                         # get id
@@ -137,23 +146,27 @@ while(True):
                         if (message[5:7] == 'up') and (message[7] == '>'):
                             print('up')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:7])
-                            data = str.encode(message)
-                            connection.sendall(data)
+                            for conn, client_a in clients:
+                                data = str.encode(message)
+                                connection.sendall(data)
                         if (message[5:9] == 'down') and (message[9] == '>'):
                             print('down')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:9])
-                            data = str.encode(message)
-                            connection.sendall(data) 
+                            for conn, client_a in clients:
+                                data = str.encode(message)
+                                connection.sendall(data) 
                         if (message[5:9] == 'left') and (message[9] == '>'):
                             print('left')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:9])
-                            data = str.encode(message)
-                            connection.sendall(data)
+                            for conn, client_a in clients:
+                                data = str.encode(message)
+                                connection.sendall(data)
                         if (message[5:10] == 'right') and (message[10] == '>'):
                             print('right')
                             message = 'TURNED<{},{}>'.format(turn_id, message[5:10])
-                            data = str.encode(message)
-                            connection.sendall(data)
+                            for conn, client_a in clients:
+                                data = str.encode(message)
+                                connection.sendall(data)
 
                 else:
                     print('no data from', client_address)
