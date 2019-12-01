@@ -12,7 +12,7 @@ server_messages = ('WELCOME', 'START', 'CONNECTED', 'DISCONNECTED', 'ISREADY', '
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-server_address = ('', 10002)
+server_address = ('', 10001)
 print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
@@ -110,6 +110,11 @@ while(True):
                             message = 'TERMINATED<{}>'.format(terminated_id)
                             data = str.encode(message)
                             conn.sendall(data)
+
+                        if len(ready_players) == 0:
+                            ready_players = []
+                        if len(ready_players) == 1:
+                            ready_players = []
 
                     if message == 'READY':
                         print('received READY')

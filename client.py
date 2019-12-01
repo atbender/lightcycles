@@ -252,7 +252,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 # Connect the socket to the port where the server is listening
-server_address = ('192.168.1.10', 10002)
+server_address = ('192.168.43.33', 10001)
 print('connecting to {} port {}'.format(*server_address))
 sock.connect(server_address)
 sock.setblocking(False)
@@ -310,24 +310,46 @@ try:
                         #time.sleep(0.5)
                         redrawWindow(win)
                         if len(players_ready) == 0:
+                            players_ready = []
                             print('Draw!')
+                            time.sleep(1)
+                            
                             start_game = 0
                             #time.sleep(2)
                             ready_game = 0
+                            for s in snakes:
+                                    snakes.remove(s)
+                            redrawWindow(win)
                         if len(players_ready) == 1:
                             for i in players_ready:
                                 # send victory
+                                players_ready = []
                                 print('Player', i, 'is victorious!')
                                 time.sleep(1)
-                                players_ready.remove(i)
+                                print('players_ready', players_ready)
+                                
+                                print('removed from ready')
                                 #snakes[i].body = []
-                                del snakes[i]
+                                #
+                                
+                                print('snakes:', snakes)
+                                for s in snakes:
+                                    snakes.remove(s)
+                            
+                            redrawWindow(win)
+                            print('pausing game!')
                             start_game = 0
                             #time.sleep(2)
                             ready_game = 0
+                            print('game paused!')
 
                 if (message[0:8] == "WELCOME<") and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
-                    my_id = int(message[8:9])
+                    if 'my_id' in locals():
+                        pass
+                    else:
+                        my_id = int(message[8:9])
+                    
+
 
                 #if message[0:8] == 'ISREADY<' and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     #pass
@@ -474,8 +496,10 @@ try:
 
                     #print('checking collision on', s.player)
                     if term == 0:
+                        print('here')
                         for x in range(len(s.body)):
                             if s.body[x] != snakes[my_id].head and s.body[x].pos == snakes[my_id].head.pos:
+                                print(my_id)
                                 #print('COLLISION!')
                                 # terminate s
                                 #start_game = 0
