@@ -105,6 +105,7 @@ while(True):
 
                     if message[0:10] == 'TERMINATE<' and (message[10] >= '0') and (message[10] <= '3') and (message[11]) == ">":
                         terminated_id = message[10]
+                        ready_players.remove(int(message[10]))
                         for conn, client_a in clients:
                             message = 'TERMINATED<{}>'.format(terminated_id)
                             data = str.encode(message)

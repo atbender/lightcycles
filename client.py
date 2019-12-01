@@ -31,11 +31,11 @@ class cube(object):
         pygame.draw.rect(surface, self.color, (i*dis+1,j*dis+1, dis-2, dis-2))
         if eyes:
             centre = dis//2
-            radius = 3
-            circleMiddle = (i*dis+centre-radius,j*dis+8)
-            circleMiddle2 = (i*dis + dis -radius*2, j*dis+8)
+            radius = 5
+            circleMiddle = (i*dis+centre,j*dis+centre)
+            #circleMiddle2 = (i*dis + dis -radius*2, j*dis+8)
             pygame.draw.circle(surface, (0,0,0), circleMiddle, radius)
-            pygame.draw.circle(surface, (0,0,0), circleMiddle2, radius)
+            #pygame.draw.circle(surface, (0,0,0), circleMiddle2, radius)
        
  
  
@@ -284,7 +284,7 @@ try:
     message = 'CONNECT'
     data = str.encode(message)
     sock.sendall(data)
-
+    term = 0
     #chunks = ''
 
     while True:
@@ -302,19 +302,40 @@ try:
                     start_game = 1
 
                 if message[0:11] == 'TERMINATED<' and (message[11] >= '0') and (message[11] <= '3') and (message[12]) == ">":
+                    
                     if int(message[11]) in players_ready:
                         players_ready.remove(int(message[11]))
-                        snakes[int(message[11])].body = []
-                        snakes.remove[int(message[11])]
+                        #wsnakes[int(message[11])].body = []
+                        del snakes[int(message[11])]
+                        #time.sleep(0.5)
+                        redrawWindow(win)
+                        if len(players_ready) == 0:
+                            print('Draw!')
+                            start_game = 0
+                            #time.sleep(2)
+                            ready_game = 0
+                        if len(players_ready) == 1:
+                            for i in players_ready:
+                                # send victory
+                                print('Player', i, 'is victorious!')
+                                time.sleep(1)
+                                players_ready.remove(i)
+                                #snakes[i].body = []
+                                del snakes[i]
+                            start_game = 0
+                            #time.sleep(2)
+                            ready_game = 0
 
                 if (message[0:8] == "WELCOME<") and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     my_id = int(message[8:9])
 
                 #if message[0:8] == 'ISREADY<' and (message[8:9] >= '0') and (message[8:9] <= '3') and (message[9:10]) == ">":
                     #pass
-                    #players_ready.append(int(message[8]))
+                    
 
                 if (message[0:6] == 'SPAWN<'):
+                    term = 0
+                    players_ready.append(int(message[6]))
                     print('spawning:', message)
                     if message[6] == '0': #ID
                         if (message[8:10] == 'up'):
@@ -422,7 +443,7 @@ try:
                 sock.sendall(data)
                 sock.close()
                 exit()
-            elif key == 'enter' and ready_game == 0:
+            elif key == 'enter' and ready_game == 0 and start_game == 0:
                 message = 'READY'
                 data = str.encode(message)
                 sock.sendall(data)
@@ -446,32 +467,46 @@ try:
                 clock.tick(15)
                 for s in snakes:
                     #if s.player == 0:
-                    print('moving ', s.player, s.direction)
+                    #print('moving ', s.player, s.direction)
                     s.move()
-                    print('adding cube to', s.player)
+                    #print('adding cube to', s.player)
                     s.addCube()
 
-                    print('checking collision on', s.player)
-                    for x in range(len(s.body)):
-                        if s.body[x] != snakes[my_id].head and s.body[x].pos == snakes[my_id].head.pos:
-                            #print('COLLISION!')
-                            # terminate s
-                            message = 'TERMINATE<{}>'.format(my_id)
-                            data = str.encode(message)
-                            sock.sendall(data)
+                    #print('checking collision on', s.player)
+                    if term == 0:
+                        for x in range(len(s.body)):
+                            if s.body[x] != snakes[my_id].head and s.body[x].pos == snakes[my_id].head.pos:
+                                #print('COLLISION!')
+                                # terminate s
+                                #start_game = 0
+                                term = 1
+                                print('terminate sent')
+                                message = 'TERMINATE<{}>'.format(my_id)
+                                data = str.encode(message)
+                                sock.sendall(data)
 
-                            if my_id in players_ready:
-                                players_ready.remove(int(message[11]))
-                                snakes[int(message[11])].body = []
-                                snakes.remove[int(message[11])]
+                                if my_id in players_ready:
+                                    #print('Removing dead player!!!!!!')
+                                    #players_ready.remove(my_id)
+                                    #snakes[my_id].body = []
+                                    #del snakes[my_id]
+                                    #redrawWindow(win)
+                                    ready_game = 0
+                                    snakes[my_id].dirx = 0
+                                    snakes[my_id].diry = 0
 
-                            print('removed and terminated')
-                            #snakes.remove[my_id]
-                                    
-                            #print('Score: ', len(s.body))
-                            #message_box('You Lost!', 'Play again...')
-                            #s.reset((10,10))
-                            break
+                                    #if len(players_ready) == 1 or len(players_ready) == 0:
+                                        #print('Game over!!!!!!')
+                                        #start_game = 0
+
+
+                                #print('removed and terminated')
+                                #snakes.remove[my_id]
+                                        
+                                #print('Score: ', len(s.body))
+                                #message_box('You Lost!', 'Play again...')
+                                #s.reset((10,10))
+                                break
 
             
                 redrawWindow(win)
